@@ -22,16 +22,17 @@ public class Otrs6Client implements OtrsClient {
     private final String otrsPassword;
     private final ObjectFactory factory = new ObjectFactory();
 
-    public Otrs6Client(String otrsUrl, String otrsUser, String otrsPassword) {
-        this.otrsUser = otrsUser;
-        this.otrsPassword = otrsPassword;
+    public Otrs6Client(ClientCredentials credentials) {
+        this.otrsUser = credentials.username;
+        this.otrsPassword = credentials.password;
+
         try {
-            GenericTicketConnector service = new GenericTicketConnector(new URL(otrsUrl));
+            GenericTicketConnector service = new GenericTicketConnector(new URL(credentials.url));
             this.port = service.getGenericTicketConnectorEndPoint();
             ((BindingProvider) port).getRequestContext()
-                    .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, otrsUrl);
+                    .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, credentials.url);
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Invalid OTRS URL: " + otrsUrl, e);
+            throw new IllegalArgumentException("Invalid OTRS URL: " + credentials.url, e);
         }
     }
 
