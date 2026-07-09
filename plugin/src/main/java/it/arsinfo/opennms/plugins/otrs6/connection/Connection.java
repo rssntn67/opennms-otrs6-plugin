@@ -9,13 +9,13 @@ public interface Connection {
     void setIgnoreSslCertificateValidation(boolean ignoreSslCertificateValidation);
 
     /**
-     * Returns the URL of the orchestrator.
-     * @return the orchestrator URL
+     * Returns the URL of the OTRS server.
+     * @return the OTRS URL
      */
     String getUrl();
 
     /**
-     * Changes the URL of the orchestrator.
+     * Changes the URL of the OTRS server.
      * @param url the new URL
      */
     void setUrl(final String url);

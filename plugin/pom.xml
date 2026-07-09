@@ -18,6 +18,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
+                        <Karaf-Commands>*</Karaf-Commands>
                         <!-- Nothing to export -->
                         <Export-Package></Export-Package>
                     </instructions>
@@ -76,6 +77,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.core</artifactId>
+            <version>${karaf.version}</version>
         </dependency>
 
         <dependency>

@@ -12,12 +12,12 @@ public class ClientCredentials {
     public final String url;
 
     /**
-     * The username used to authenticate the connection to the Service Now.
+     * The username used to authenticate the connection to OTRS.
      */
     public final String username;
 
     /**
-     * The password used to authenticate the connection to the Service Now.
+     * The password used to authenticate the connection to OTRS.
      */
     public final String password;
 
@@ -84,7 +84,7 @@ public class ClientCredentials {
 
     @Override
     public String toString() {
-        return "ApiClientCredentials{" +
+        return "ClientCredentials{" +
                 "url='" + url + '\'' +
                 ", username='" + username + '\'' +
                 ", password='****" + '\'' +

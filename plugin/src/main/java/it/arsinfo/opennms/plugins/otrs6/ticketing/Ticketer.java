@@ -28,6 +28,6 @@ public class Ticketer implements TicketingPlugin {
     private OtrsClient client() {
         var connection = connectionManager.getConnection()
                 .orElseThrow(() -> new IllegalStateException("No OTRS connection configured"));
-        return clientManager.getOtrsClient(ClientManager.asApiClientCredentials(connection));
+        return clientManager.getOtrsClient(ClientManager.asClientCredentials(connection));
     }
 }

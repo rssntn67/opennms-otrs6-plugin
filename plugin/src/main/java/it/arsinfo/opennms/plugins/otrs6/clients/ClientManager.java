@@ -26,7 +26,7 @@ public class ClientManager {
     public Optional<ConnectionValidationError> validate(Connection connection) {
         LOG.warn("validate: {}", connection);
         try {
-            ClientCredentials credentials = asApiClientCredentials(connection);
+            ClientCredentials credentials = asClientCredentials(connection);
             LOG.warn("validate: {}", credentials);
             return Optional.empty();
         } catch (Exception e) {
@@ -35,7 +35,7 @@ public class ClientManager {
         return Optional.of(new ConnectionValidationError("Connection could not be validated"));
     }
 
-    public static ClientCredentials asApiClientCredentials(Connection connection) {
+    public static ClientCredentials asClientCredentials(Connection connection) {
         return ClientCredentials.builder()
                 .withUsername(connection.getUsername())
                 .withPassword(connection.getPassword())

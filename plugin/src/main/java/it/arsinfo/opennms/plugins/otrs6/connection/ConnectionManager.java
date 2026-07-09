@@ -47,7 +47,7 @@ public class ConnectionManager {
     /**
      * Creates a basic authentication connection under the given alias.
      *
-     * @param url        the URL of the prism server
+     * @param url        the URL of the OTRS server
      * @param username          the username to authenticate the connection
      * @param password          the password to authenticate the connection
      * @param ignoreSslCerticateValidation          ignore Ssl Certificate Validation
