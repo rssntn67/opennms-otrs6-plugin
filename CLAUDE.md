@@ -77,3 +77,13 @@ Runtime configuration is read from
 ### Test Conventions
 
 - `*Test.java` = unit tests (Surefire, runs on `mvn test`)
+
+## Known Limitations
+
+The `karaf-features` module's Karaf feature verification (`karaf-maven-plugin:verify`)
+is currently skipped. The generated SOAP client stubs only need `javax.jws` /
+`javax.xml.ws` at compile time (`provided` scope), but resolving a working
+JAX-WS runtime inside Karaf at deploy time requires wiring in an OSGi JAX-WS
+implementation (e.g. Karaf's `cxf`/`cxf-jaxws` feature), which isn't done yet.
+Deploying this plugin to a live Karaf instance will need that runtime wiring
+added first.
