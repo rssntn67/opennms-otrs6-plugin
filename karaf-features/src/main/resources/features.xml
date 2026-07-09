@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features name="opennms-plugins-otrs6-features" xmlns="http://karaf.apache.org/xmlns/features/v1.4.0">
+
+    <feature name="opennms-plugins-otrs6" description="OpenNMS :: Plugins :: OTRS6 Ticketing Plugin" version="${project.version}">
+        <feature dependency="true">aries-blueprint</feature>
+        <feature dependency="true">shell</feature>
+        <feature version="${opennms.api.version}" dependency="true">opennms-integration-api</feature>
+        <bundle>mvn:it.arsinfo.opennms.plugins/otrs6-plugin/${project.version}</bundle>
+    </feature>
+
+</features>
