@@ -95,28 +95,48 @@ Components are wired via OSGi Blueprint XML at
 `plugin/src/main/resources/OSGI-INF/blueprint/blueprint.xml`, which wires
 `ClientManager` and `ConnectionManager` (the latter taking optional
 references to OpenNMS's `RuntimeInfo` and `SecureCredentialsVault` services)
-into `Ticketer`, registered as the `TicketingPlugin` OSGi service. The shell
-commands are `@Service`-annotated Karaf actions (not part of the Blueprint
-XML) that get their `ConnectionManager`/`ClientManager` via `@Reference`.
+into `Ticketer`, registered as the `TicketingPlugin` OSGi service.
+`ClientManager` and `ConnectionManager` are *also* individually published as
+OSGi services (`<service>` elements, not just Blueprint-local beans) — the
+shell commands are `@Service`-annotated Karaf actions (not part of the
+Blueprint XML) that get them via `@Reference`, which only resolves against
+the OSGi service registry. Without those extra `<service>` entries, the
+shell commands install but every command silently fails to register
+(`CommandExtension` logs "Command registration delayed... Missing service"
+and never recovers).
+
+### JAX-WS Runtime Wiring
+
+The generated SOAP stubs need `javax.jws`, `javax.xml.ws`, and `javax.xml.bind`
+at OSGi runtime, not just compile time. `karaf-features/src/main/resources/features.xml`
+provides these by listing the CXF 3.6.8 (`${cxf.version}`) client-side JAX-WS bundle
+closure directly as `<bundle dependency="true">` entries, rather than
+depending on Karaf's own `cxf-jaxws` feature (from
+`org.apache.cxf.karaf:apache-cxf`'s features.xml). That feature pulls in two
+things a pure JAX-WS client doesn't need and that OpenNMS's own bundled
+system repo doesn't carry:
+- `cxf-core` conditionally installs `cxf-commands` (CXF's shell integration)
+  whenever the `shell` feature is already active — which it always is — and
+  that needs `org.apache.cxf.karaf:cxf-karaf-commands`, an artifact OpenNMS
+  doesn't bundle.
+- `cxf-http` depends on Karaf's `http` (pax-web) feature, which OpenNMS
+  deliberately doesn't use (it has its own Felix HTTP whiteboard bridge
+  instead); `cxf-rt-transports-http` itself doesn't import any pax-web/jetty
+  package, so it isn't actually needed for outbound client calls.
+Also note `plugin/pom.xml`'s `maven-bundle-plugin` config overrides the
+`Import-Package` ranges for `javax.jws`/`javax.jws.soap`/`javax.xml.ws`: the
+compile-time-only Oracle spec jars declare narrower package versions than
+what's actually exported at runtime (`jakarta.jws-api` 2.1.0, servicemix
+`jaxws-api` 2.3), so bnd's inferred ranges don't resolve without widening.
 
 ### Key Technologies
 
 - **OpenNMS Integration API 1.6.1** — `TicketingPlugin`, `SecureCredentialsVault`, `RuntimeInfo`
 - **OSGi / Apache Karaf 4.3.10** — Bundle lifecycle, service registry, shell commands
 - **OSGi Blueprint (Aries)** — Declarative dependency injection via XML
-- **Apache CXF `cxf-codegen-plugin`** — Generates JAX-WS client stubs from `GenericTicketConnector.wsdl`
+- **Apache CXF `cxf-codegen-plugin`** (build-time) / CXF 3.6.8 runtime bundles (deploy-time) — Generates and executes the JAX-WS client stubs from `GenericTicketConnector.wsdl`
 - **JUnit 4 + Mockito 2** — Unit tests
 
 ### Test Conventions
 
 - `*Test.java` = unit tests (Surefire, runs on `mvn test`)
-
-## Known Limitations
-
-The `karaf-features` module's Karaf feature verification (`karaf-maven-plugin:verify`)
-is currently skipped. The generated SOAP client stubs only need `javax.jws` /
-`javax.xml.ws` at compile time (`provided` scope), but resolving a working
-JAX-WS runtime inside Karaf at deploy time requires wiring in an OSGi JAX-WS
-implementation (e.g. Karaf's `cxf`/`cxf-jaxws` feature), which isn't done yet.
-Deploying this plugin to a live Karaf instance will need that runtime wiring
-added first.

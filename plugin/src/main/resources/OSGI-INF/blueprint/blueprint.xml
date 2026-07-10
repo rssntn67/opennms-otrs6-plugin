@@ -6,6 +6,7 @@
                 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
 
     <bean id="clientManager" class="it.arsinfo.opennms.plugins.otrs6.clients.ClientManager"/>
+    <service ref="clientManager" interface="it.arsinfo.opennms.plugins.otrs6.clients.ClientManager"/>
 
     <bean id="connectionManager" class="it.arsinfo.opennms.plugins.otrs6.connection.ConnectionManager">
         <argument>
@@ -15,6 +16,7 @@
             <reference interface="org.opennms.integration.api.v1.scv.SecureCredentialsVault" availability="optional"/>
         </argument>
     </bean>
+    <service ref="connectionManager" interface="it.arsinfo.opennms.plugins.otrs6.connection.ConnectionManager"/>
 
     <bean id="ticketer" class="it.arsinfo.opennms.plugins.otrs6.ticketing.Ticketer">
         <argument ref="clientManager"/>

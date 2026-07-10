@@ -5,6 +5,63 @@
         <feature dependency="true">aries-blueprint</feature>
         <feature dependency="true">shell</feature>
         <feature version="${opennms.api.version}" dependency="true">opennms-integration-api</feature>
+
+        <!--
+          A hand-picked closure of CXF ${cxf.version}'s client-side JAX-WS bundles, instead of a
+          dependency on Karaf's own "cxf-jaxws" feature (org.apache.cxf.karaf:apache-cxf features.xml).
+          That feature drags in two things this plugin doesn't need and that OpenNMS's own offline
+          bundle repo doesn't carry:
+            - "cxf-core" conditionally installs "cxf-commands" (shell integration) whenever the
+              "shell" feature is already active, which it always is here; that pulls
+              org.apache.cxf.karaf:cxf-karaf-commands, an artifact OpenNMS doesn't bundle.
+            - "cxf-http" depends on Karaf's "http" (pax-web) feature, which OpenNMS deliberately
+              doesn't use (it has its own Felix HTTP whiteboard bridge instead).
+          Neither is required for a pure JAX-WS client: cxf-rt-transports-http doesn't import any
+          pax-web/jetty package, and the plugin has no need for CXF's shell commands. Every bundle
+          below is already present in OpenNMS's bundled system repo (it uses the same CXF stack
+          internally, e.g. org.opennms.core.wsman.cxf), so this resolves fully offline.
+        -->
+        <bundle start-level="10" dependency="true">mvn:org.apache.geronimo.specs/geronimo-osgi-registry/1.1</bundle>
+        <bundle start-level="10" dependency="true">mvn:com.sun.activation/jakarta.activation/1.2.2</bundle>
+        <bundle start-level="10" dependency="true">mvn:jakarta.annotation/jakarta.annotation-api/1.3.5</bundle>
+        <bundle start-level="10" dependency="true">mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.stax-api-1.2/2.9.0</bundle>
+        <bundle start-level="10" dependency="true">mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.jaxb-api-2.3/2.3_2</bundle>
+        <bundle start-level="10" dependency="true">mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.jaxws-api-2.3/2.3_2</bundle>
+        <bundle start-level="10" dependency="true">mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.saaj-api-1.4/1.4_1</bundle>
+        <bundle start-level="10" dependency="true">mvn:jakarta.jws/jakarta.jws-api/2.1.0</bundle>
+        <bundle start-level="10" dependency="true">mvn:jakarta.mail/jakarta.mail-api/1.6.7</bundle>
+        <bundle start-level="20" dependency="true">mvn:org.codehaus.woodstox/stax2-api/4.2.1</bundle>
+        <bundle start-level="20" dependency="true">mvn:com.fasterxml.woodstox/woodstox-core/6.6.2</bundle>
+        <bundle start-level="20" dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.jaxb-runtime/2.3.2_1</bundle>
+        <bundle start-level="20" dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.jaxb-xjc/2.3.2_1</bundle>
+        <bundle start-level="20" dependency="true">mvn:com.sun.istack/istack-commons-runtime/3.0.12</bundle>
+
+        <bundle start-level="30" dependency="true">mvn:org.apache.ws.xmlschema/xmlschema-core/2.3.1</bundle>
+        <bundle start-level="25" dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.xmlresolver/1.2_5</bundle>
+        <bundle start-level="30" dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.fastinfoset/1.2.18_1</bundle>
+        <bundle start-level="30" dependency="true">mvn:org.ow2.asm/asm/9.8</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-core/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-management/${cxf.version}</bundle>
+
+        <bundle start-level="30" dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.wsdl4j/1.6.3_1</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-wsdl/${cxf.version}</bundle>
+
+        <bundle start-level="30" dependency="true">mvn:org.apache.neethi/neethi/3.2.1</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-ws-policy/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-ws-addr/${cxf.version}</bundle>
+
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-databinding-jaxb/${cxf.version}</bundle>
+
+        <bundle start-level="25" dependency="true">mvn:org.jvnet.staxex/stax-ex/1.8.3</bundle>
+        <bundle start-level="25" dependency="true">mvn:com.sun.xml.messaging.saaj/saaj-impl/1.5.3</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-bindings-xml/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-bindings-soap/${cxf.version}</bundle>
+
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-transports-http/${cxf.version}</bundle>
+
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-simple/${cxf.version}</bundle>
+        <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-jaxws/${cxf.version}</bundle>
+
         <bundle>mvn:it.arsinfo.opennms.plugins/otrs6-plugin/${project.version}</bundle>
     </feature>
 

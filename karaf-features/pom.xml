@@ -60,18 +60,10 @@
                 <artifactId>karaf-maven-plugin</artifactId>
                 <version>${karaf.version}</version>
                 <extensions>true</extensions>
-                <configuration>
-                  <!-- Karaf feature verification requires an OSGi JAX-WS runtime
-                       (e.g. Karaf's cxf/cxf-jaxws feature) that isn't wired up
-                       yet; the generated SOAP stubs only need javax.jws /
-                       javax.xml.ws at compile time. Skipped until that runtime
-                       wiring is added; see README.md. -->
-                  <skip>true</skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>verify</id>
-                        <phase>process-resources</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>verify</goal>
                         </goals>
@@ -113,7 +105,6 @@
             <type>xml</type>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>it.arsinfo.opennms.plugins</groupId>
             <artifactId>otrs6-plugin</artifactId>
