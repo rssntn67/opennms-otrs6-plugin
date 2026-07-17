@@ -56,7 +56,10 @@ public class CachingOtrsClient implements OtrsClient {
 
     @Override
     public String savaORUpdate(Ticket ticket) {
-        return delegate.savaORUpdate(ticket);
+        String id = delegate.savaORUpdate(ticket);
+        ticketCache.remove(id);
+        allCache = null;
+        return id;
     }
 
     private static final class Entry<T> {

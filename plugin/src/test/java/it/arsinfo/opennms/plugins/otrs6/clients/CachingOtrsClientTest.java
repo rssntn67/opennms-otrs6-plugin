@@ -101,6 +101,40 @@ public class CachingOtrsClientTest {
         verify(delegate, times(2)).getAll();
     }
 
+    @Test
+    public void saveOrUpdate_invalidatesTicketCacheEntry() {
+        Ticket original = ImmutableTicket.newBuilder()
+                .setId("1").setSummary("Original").setState(Ticket.State.OPEN).build();
+        when(delegate.get("1")).thenReturn(original);
+        cache.get("1");
+
+        Ticket updated = ImmutableTicket.newBuilder()
+                .setId("1").setSummary("Updated").setState(Ticket.State.OPEN).build();
+        when(delegate.savaORUpdate(updated)).thenReturn("1");
+
+        cache.savaORUpdate(updated);
+        cache.get("1");
+
+        verify(delegate, times(2)).get("1");
+    }
+
+    @Test
+    public void saveOrUpdate_clearsAllCache() {
+        List<Ticket> tickets = List.of(
+                ImmutableTicket.newBuilder().setId("1").setSummary("T1").setState(Ticket.State.OPEN).build());
+        when(delegate.getAll()).thenReturn(tickets);
+        cache.getAll();
+
+        Ticket newTicket = ImmutableTicket.newBuilder()
+                .setSummary("Brand new").setState(Ticket.State.OPEN).build();
+        when(delegate.savaORUpdate(newTicket)).thenReturn("5");
+
+        cache.savaORUpdate(newTicket);
+        cache.getAll();
+
+        verify(delegate, times(2)).getAll();
+    }
+
     private static final class MutableClock extends Clock {
         private Instant instant;
         private final ZoneId zone;
