@@ -18,6 +18,7 @@ public class CachingOtrsClient implements OtrsClient {
     private final Duration timeout;
 
     private final Map<String, Entry<Ticket>> ticketCache = new ConcurrentHashMap<>();
+    private volatile Entry<List<Ticket>> allCache;
 
     public CachingOtrsClient(OtrsClient delegate) {
         this(delegate, Clock.systemUTC(), DEFAULT_TIMEOUT);
@@ -44,7 +45,13 @@ public class CachingOtrsClient implements OtrsClient {
 
     @Override
     public List<Ticket> getAll() {
-        return delegate.getAll();
+        Entry<List<Ticket>> cached = allCache;
+        if (cached != null && !cached.isExpired(clock)) {
+            return cached.value;
+        }
+        List<Ticket> tickets = delegate.getAll();
+        allCache = new Entry<>(tickets, clock.instant().plus(timeout));
+        return tickets;
     }
 
     @Override

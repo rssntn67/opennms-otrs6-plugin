@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -70,6 +71,34 @@ public class CachingOtrsClientTest {
         assertThat(first, nullValue());
         assertThat(second, nullValue());
         verify(delegate, times(2)).get("99");
+    }
+
+    @Test
+    public void getAll_cachesWithinTimeout() {
+        List<Ticket> tickets = List.of(
+                ImmutableTicket.newBuilder().setId("1").setSummary("T1").setState(Ticket.State.OPEN).build(),
+                ImmutableTicket.newBuilder().setId("2").setSummary("T2").setState(Ticket.State.CLOSED).build());
+        when(delegate.getAll()).thenReturn(tickets);
+
+        List<Ticket> first = cache.getAll();
+        List<Ticket> second = cache.getAll();
+
+        assertThat(first, sameInstance(tickets));
+        assertThat(second, sameInstance(tickets));
+        verify(delegate, times(1)).getAll();
+    }
+
+    @Test
+    public void getAll_refetchesAfterTimeoutExpires() {
+        List<Ticket> tickets = List.of(
+                ImmutableTicket.newBuilder().setId("1").setSummary("T1").setState(Ticket.State.OPEN).build());
+        when(delegate.getAll()).thenReturn(tickets);
+
+        cache.getAll();
+        clock.advance(Duration.ofMinutes(5).plusSeconds(1));
+        cache.getAll();
+
+        verify(delegate, times(2)).getAll();
     }
 
     private static final class MutableClock extends Clock {
