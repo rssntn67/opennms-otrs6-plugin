@@ -102,6 +102,19 @@ public class CachingOtrsClientTest {
     }
 
     @Test
+    public void getAll_doesNotPopulateTicketCache() {
+        List<Ticket> tickets = List.of(
+                ImmutableTicket.newBuilder().setId("1").setSummary("T1").setState(Ticket.State.OPEN).build());
+        when(delegate.getAll()).thenReturn(tickets);
+        when(delegate.get("1")).thenReturn(tickets.get(0));
+
+        cache.getAll();
+        cache.get("1");
+
+        verify(delegate, times(1)).get("1");
+    }
+
+    @Test
     public void saveOrUpdate_invalidatesTicketCacheEntry() {
         Ticket original = ImmutableTicket.newBuilder()
                 .setId("1").setSummary("Original").setState(Ticket.State.OPEN).build();

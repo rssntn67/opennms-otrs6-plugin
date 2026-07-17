@@ -17,6 +17,8 @@ public class CachingOtrsClient implements OtrsClient {
     private final Clock clock;
     private final Duration timeout;
 
+    // Unbounded by design: no background eviction thread per the design spec, so a stale
+    // entry is only reclaimed when its ticket ID is looked up again or written to.
     private final Map<String, Entry<Ticket>> ticketCache = new ConcurrentHashMap<>();
     private volatile Entry<List<Ticket>> allCache;
 
