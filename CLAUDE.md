@@ -62,6 +62,13 @@ JAX-WS stub classes generated at build time by the `cxf-codegen-plugin` from
 `plugin/src/main/wsdl/GenericTicketConnector.wsdl` into package
 `it.arsinfo.opennms.plugins.otrs6.clients.otrs`.
 
+`ClientManager` wraps the `Otrs6Client` it builds in `CachingOtrsClient`, a
+decorator over `OtrsClient` that caches `get(ticketId)`/`getAll()` results
+for a fixed 5-minute expire-after-write window (hand-rolled with
+`ConcurrentHashMap` + an injectable `Clock`, no new dependency) and
+invalidates both caches on `saveOrUpdate`. Design rationale:
+`docs/superpowers/specs/2026-07-17-ticket-cache-design.md`.
+
 ### Connection Storage (Secure Credentials Vault)
 
 There is no `.cfg` file for OTRS credentials. `ConnectionManager`
