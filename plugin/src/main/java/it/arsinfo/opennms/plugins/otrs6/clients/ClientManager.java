@@ -19,7 +19,7 @@ public class ClientManager {
             return client;
         }
         this.credentials = credentials;
-        this.client = new Otrs6Client(credentials);
+        this.client = new CachingOtrsClient(new Otrs6Client(credentials));
         return client;
     }
 
