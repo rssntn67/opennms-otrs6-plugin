@@ -62,6 +62,7 @@
         <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-simple/${cxf.version}</bundle>
         <bundle start-level="40" dependency="true">mvn:org.apache.cxf/cxf-rt-frontend-jaxws/${cxf.version}</bundle>
 
+        <bundle dependency="true">mvn:javax.ws.rs/javax.ws.rs-api/${jaxrs.version}</bundle>
         <bundle>mvn:it.arsinfo.opennms.plugins/otrs6-plugin/${project.version}</bundle>
     </feature>
 
