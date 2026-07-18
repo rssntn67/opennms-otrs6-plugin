@@ -2,6 +2,7 @@
 package it.arsinfo.opennms.plugins.otrs6.clients;
 
 import it.arsinfo.opennms.plugins.otrs6.connection.Connection;
+import it.arsinfo.opennms.plugins.otrs6.connection.ConnectionManager;
 import it.arsinfo.opennms.plugins.otrs6.connection.ConnectionValidationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,12 @@ public class ClientManager {
         this.credentials = credentials;
         this.client = new CachingOtrsClient(new Otrs6Client(credentials));
         return client;
+    }
+
+    public Optional<OtrsClient> getOtrsClient(ConnectionManager connectionManager) {
+        return connectionManager.getConnection()
+                .map(ClientManager::asClientCredentials)
+                .map(this::getOtrsClient);
     }
 
     public Optional<ConnectionValidationError> validate(Connection connection) {
