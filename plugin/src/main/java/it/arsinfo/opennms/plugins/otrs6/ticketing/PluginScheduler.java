@@ -22,9 +22,9 @@ public class PluginScheduler implements HealthCheck {
     private final OtrsTicketDao otrsTicketDao;
     private final Duration interval;
 
-    private ScheduledExecutorService executor;
-    private ScheduledFuture<?> alarmTicketUpdaterFuture;
-    private ScheduledFuture<?> otrsTicketDaoFuture;
+    private volatile ScheduledExecutorService executor;
+    private volatile ScheduledFuture<?> alarmTicketUpdaterFuture;
+    private volatile ScheduledFuture<?> otrsTicketDaoFuture;
 
     public PluginScheduler(AlarmTicketUpdater alarmTicketUpdater, OtrsTicketDao otrsTicketDao) {
         this(alarmTicketUpdater, otrsTicketDao, DEFAULT_INTERVAL);
