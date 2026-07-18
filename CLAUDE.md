@@ -69,6 +69,14 @@ for a fixed 5-minute expire-after-write window (hand-rolled with
 invalidates both caches on `saveOrUpdate`. Design rationale:
 `docs/superpowers/specs/2026-07-17-ticket-cache-design.md`.
 
+`AlarmTicketUpdater` (same package) implements `Runnable`: for each
+OpenNMS alarm with an OTRS ticket, it fetches the ticket's current state
+through the cache and calls `AlarmDao.setTicketState(...)` when it's
+changed. It's wired as a blueprint bean but **nothing schedules it yet** —
+`run()` is not invoked anywhere; a `ScheduledExecutorService` (or similar)
+to actually call it periodically is a deliberately separate follow-up.
+Design rationale: `docs/superpowers/specs/2026-07-18-alarm-ticket-updater-design.md`.
+
 ### Connection Storage (Secure Credentials Vault)
 
 There is no `.cfg` file for OTRS credentials. `ConnectionManager`
@@ -103,6 +111,11 @@ Components are wired via OSGi Blueprint XML at
 `ClientManager` and `ConnectionManager` (the latter taking optional
 references to OpenNMS's `RuntimeInfo` and `SecureCredentialsVault` services)
 into `Ticketer`, registered as the `TicketingPlugin` OSGi service.
+It also wires `AlarmDao` (OpenNMS's own service, no optional wrapper) into
+`AlarmTicketUpdater`. Unlike `RuntimeInfo`/`SecureCredentialsVault`, this
+reference is intentionally mandatory — `AlarmDao` is core to OpenNMS and
+always registered, but it means the *whole bundle's* activation (not just
+`AlarmTicketUpdater`) now blocks if `AlarmDao` is ever unavailable.
 `ClientManager` and `ConnectionManager` are *also* individually published as
 OSGi services (`<service>` elements, not just Blueprint-local beans) — the
 shell commands are `@Service`-annotated Karaf actions (not part of the
