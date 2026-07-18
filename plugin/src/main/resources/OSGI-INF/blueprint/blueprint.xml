@@ -32,9 +32,12 @@
         <argument ref="alarmDao"/>
     </bean>
 
+    <bean id="ticketListCache" class="it.arsinfo.opennms.plugins.otrs6.ticketing.TicketListCache"/>
+
     <bean id="otrsTicketDao" class="it.arsinfo.opennms.plugins.otrs6.ticketing.OtrsTicketDao">
         <argument ref="clientManager"/>
         <argument ref="connectionManager"/>
+        <argument ref="ticketListCache"/>
     </bean>
 
     <bean id="pluginScheduler" class="it.arsinfo.opennms.plugins.otrs6.ticketing.PluginScheduler"
@@ -44,7 +47,9 @@
     </bean>
     <service interface="org.opennms.integration.api.v1.health.HealthCheck" ref="pluginScheduler"/>
 
-    <bean id="webhookHandlerImpl" class="it.arsinfo.opennms.plugins.otrs6.rest.WebhookHandlerImpl"/>
+    <bean id="webhookHandlerImpl" class="it.arsinfo.opennms.plugins.otrs6.rest.WebhookHandlerImpl">
+        <argument ref="ticketListCache"/>
+    </bean>
     <service interface="it.arsinfo.opennms.plugins.otrs6.rest.WebhookHandler" ref="webhookHandlerImpl">
         <service-properties>
             <entry key="application-path" value="/rest"/>
