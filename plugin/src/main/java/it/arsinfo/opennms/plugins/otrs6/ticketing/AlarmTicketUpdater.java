@@ -26,13 +26,17 @@ public class AlarmTicketUpdater implements Runnable {
 
     @Override
     public void run() {
-        Optional<OtrsClient> client = clientManager.getOtrsClient(connectionManager);
-        if (client.isEmpty()) {
-            LOG.warn("No OTRS connection configured, skipping ticket state update");
-            return;
-        }
-        for (Alarm alarm : alarmDao.getAlarms()) {
-            updateAlarmTicketState(client.get(), alarm);
+        try {
+            Optional<OtrsClient> client = clientManager.getOtrsClient(connectionManager);
+            if (client.isEmpty()) {
+                LOG.warn("No OTRS connection configured, skipping ticket state update");
+                return;
+            }
+            for (Alarm alarm : alarmDao.getAlarms()) {
+                updateAlarmTicketState(client.get(), alarm);
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to run alarm ticket state update", e);
         }
     }
 

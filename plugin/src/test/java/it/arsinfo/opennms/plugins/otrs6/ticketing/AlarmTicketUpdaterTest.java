@@ -112,6 +112,15 @@ public class AlarmTicketUpdaterTest {
     }
 
     @Test
+    public void run_doesNotPropagateExceptionFromClientResolution() {
+        when(clientManager.getOtrsClient(connectionManager)).thenThrow(new RuntimeException("vault unavailable"));
+
+        updater.run();
+
+        verify(alarmDao, never()).getAlarms();
+    }
+
+    @Test
     public void run_continuesProcessingAfterOneAlarmFails() {
         Alarm failing = mock(Alarm.class);
         when(failing.getId()).thenReturn(1);
