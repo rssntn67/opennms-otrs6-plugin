@@ -77,6 +77,14 @@ changed. It's wired as a blueprint bean but **nothing schedules it yet** —
 to actually call it periodically is a deliberately separate follow-up.
 Design rationale: `docs/superpowers/specs/2026-07-18-alarm-ticket-updater-design.md`.
 
+`OtrsTicketDao` (same package) is a second unscheduled `Runnable`: its
+`run()` just calls `OtrsClient.getAll()` and discards the result — a pure
+cache warm-up for `CachingOtrsClient`'s otherwise-dormant `getAll()` slot.
+Despite the name, it holds no state and exposes no getter/query method.
+Same story as `AlarmTicketUpdater`: wired as a blueprint bean, nothing
+invokes `run()` yet. Design rationale:
+`docs/superpowers/specs/2026-07-18-otrs-ticket-dao-design.md`.
+
 ### Connection Storage (Secure Credentials Vault)
 
 There is no `.cfg` file for OTRS credentials. `ConnectionManager`
