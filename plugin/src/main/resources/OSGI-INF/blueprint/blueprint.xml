@@ -32,4 +32,9 @@
         <argument ref="alarmDao"/>
     </bean>
 
+    <bean id="otrsTicketDao" class="it.arsinfo.opennms.plugins.otrs6.ticketing.OtrsTicketDao">
+        <argument ref="clientManager"/>
+        <argument ref="connectionManager"/>
+    </bean>
+
 </blueprint>
