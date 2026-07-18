@@ -76,9 +76,11 @@ changed. Design rationale:
 `docs/superpowers/specs/2026-07-18-alarm-ticket-updater-design.md`.
 
 `OtrsTicketDao` (same package) is a second unscheduled `Runnable`: its
-`run()` just calls `OtrsClient.getAll()` and discards the result — a pure
-cache warm-up for `CachingOtrsClient`'s otherwise-dormant `getAll()` slot.
-Despite the name, it holds no state and exposes no getter/query method.
+`run()` calls `OtrsClient.getAll()` — a cache warm-up for
+`CachingOtrsClient`'s otherwise-dormant `getAll()` slot — and now also
+publishes the result to `TicketListCache`, a separate holder consumed by
+the REST endpoint below. It still holds no state of its own; the state
+lives in the injected `TicketListCache` collaborator.
 Design rationale:
 `docs/superpowers/specs/2026-07-18-otrs-ticket-dao-design.md`.
 
@@ -150,6 +152,19 @@ the sibling `opennms-service-now-plugin`. It's published as an OSGi
 which is what makes OpenNMS's own JAX-RS whiteboard auto-mount it at
 `/rest/opennms-otrs-6/ping` — no manual servlet wiring. Design rationale:
 `docs/superpowers/specs/2026-07-18-webhook-handler-design.md`.
+
+`GET /tickets` (`/rest/opennms-otrs-6/tickets`) returns the last-known
+OTRS ticket list from `TicketListCache`
+(`it.arsinfo.opennms.plugins.otrs6.ticketing`) — a `volatile` holder
+written only by `OtrsTicketDao`'s scheduled runs and read only by
+`WebhookHandlerImpl`. This endpoint has **zero code path** to
+`ClientManager`/`ConnectionManager`/`OtrsClient` (deliberately, by
+design, not just by testing) — it can never trigger a live OTRS call, it
+just returns whatever was last fetched (an empty list before
+`PluginScheduler`'s first run). Because this sits on top of
+`CachingOtrsClient`'s own 5-minute TTL, served data can lag live OTRS by
+up to roughly two refresh intervals in the worst case. Design rationale:
+`docs/superpowers/specs/2026-07-18-ticket-list-cache-design.md`.
 
 ### JAX-WS Runtime Wiring
 
