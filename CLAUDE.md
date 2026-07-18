@@ -72,18 +72,25 @@ invalidates both caches on `saveOrUpdate`. Design rationale:
 `AlarmTicketUpdater` (same package) implements `Runnable`: for each
 OpenNMS alarm with an OTRS ticket, it fetches the ticket's current state
 through the cache and calls `AlarmDao.setTicketState(...)` when it's
-changed. It's wired as a blueprint bean but **nothing schedules it yet** —
-`run()` is not invoked anywhere; a `ScheduledExecutorService` (or similar)
-to actually call it periodically is a deliberately separate follow-up.
-Design rationale: `docs/superpowers/specs/2026-07-18-alarm-ticket-updater-design.md`.
+changed. Design rationale:
+`docs/superpowers/specs/2026-07-18-alarm-ticket-updater-design.md`.
 
 `OtrsTicketDao` (same package) is a second unscheduled `Runnable`: its
 `run()` just calls `OtrsClient.getAll()` and discards the result — a pure
 cache warm-up for `CachingOtrsClient`'s otherwise-dormant `getAll()` slot.
 Despite the name, it holds no state and exposes no getter/query method.
-Same story as `AlarmTicketUpdater`: wired as a blueprint bean, nothing
-invokes `run()` yet. Design rationale:
+Design rationale:
 `docs/superpowers/specs/2026-07-18-otrs-ticket-dao-design.md`.
+
+`PluginScheduler` (same package) is what actually runs both of the above:
+a single dedicated daemon thread (`otrs6-plugin-scheduler`) calls
+`run()` on each via `scheduleWithFixedDelay`, every 5 minutes, both firing
+once immediately on startup. It also implements OpenNMS's `HealthCheck`
+(the only other OSGi `<service>` publication in this plugin besides
+`Ticketer`'s `TicketingPlugin`), reporting `Starting`/`Success`/`Failure`
+based on whether either task's periodic reschedule chain is still alive.
+Wired via blueprint's `init-method="start" destroy-method="stop"`. Design
+rationale: `docs/superpowers/specs/2026-07-18-plugin-scheduler-design.md`.
 
 ### Connection Storage (Secure Credentials Vault)
 
@@ -133,6 +140,17 @@ shell commands install but every command silently fails to register
 (`CommandExtension` logs "Command registration delayed... Missing service"
 and never recovers).
 
+### REST Endpoint
+
+`WebhookHandler`/`WebhookHandlerImpl` (`it.arsinfo.opennms.plugins.otrs6.rest`)
+expose a JAX-RS `GET /ping` (`@Path("opennms-otrs-6")`) returning "pong" —
+a liveness ping, not a real webhook receiver, reproducing a pattern from
+the sibling `opennms-service-now-plugin`. It's published as an OSGi
+`<service>` with a `service-properties` entry `application-path=/rest`,
+which is what makes OpenNMS's own JAX-RS whiteboard auto-mount it at
+`/rest/opennms-otrs-6/ping` — no manual servlet wiring. Design rationale:
+`docs/superpowers/specs/2026-07-18-webhook-handler-design.md`.
+
 ### JAX-WS Runtime Wiring
 
 The generated SOAP stubs need `javax.jws`, `javax.xml.ws`, and `javax.xml.bind`
@@ -156,6 +174,23 @@ Also note `plugin/pom.xml`'s `maven-bundle-plugin` config overrides the
 compile-time-only Oracle spec jars declare narrower package versions than
 what's actually exported at runtime (`jakarta.jws-api` 2.1.0, servicemix
 `jaxws-api` 2.3), so bnd's inferred ranges don't resolve without widening.
+
+### JAX-RS Runtime Wiring
+
+`javax.ws.rs-api` (2.1.1, property `jaxrs.version`) is `provided` scope in
+`plugin/pom.xml` (compile-time only) and satisfied at OSGi runtime by an
+explicit `<bundle dependency="true">` entry in `karaf-features.xml` —
+same philosophy as the JAX-WS wiring above, but simpler: the *same*
+`javax.ws.rs-api` artifact is used for both the compile-time `provided`
+dependency and the runtime bundle, so there's no compile/runtime version
+mismatch and no `Import-Package` override is needed (unlike JAX-WS, where
+the compile-time Oracle spec jars and runtime servicemix/jakarta bundles
+are different artifacts). A `jersey-common` test-scope dependency
+(`jersey.version`) is also needed — `javax.ws.rs-api` only supplies
+interfaces, so `javax.ws.rs.core.Response.ok(...).build()` needs a
+`RuntimeDelegate` implementation to actually construct a `Response` in a
+plain JUnit test; `jersey-common` provides that without pulling in
+`jersey-client`'s unused HTTP machinery.
 
 ### Key Technologies
 
