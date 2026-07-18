@@ -24,4 +24,12 @@
     </bean>
     <service ref="ticketer" interface="org.opennms.integration.api.v1.ticketing.TicketingPlugin"/>
 
+    <reference id="alarmDao" interface="org.opennms.integration.api.v1.dao.AlarmDao"/>
+
+    <bean id="alarmTicketUpdater" class="it.arsinfo.opennms.plugins.otrs6.ticketing.AlarmTicketUpdater">
+        <argument ref="clientManager"/>
+        <argument ref="connectionManager"/>
+        <argument ref="alarmDao"/>
+    </bean>
+
 </blueprint>
