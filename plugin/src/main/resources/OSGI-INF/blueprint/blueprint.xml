@@ -44,4 +44,11 @@
     </bean>
     <service interface="org.opennms.integration.api.v1.health.HealthCheck" ref="pluginScheduler"/>
 
+    <bean id="webhookHandlerImpl" class="it.arsinfo.opennms.plugins.otrs6.rest.WebhookHandlerImpl"/>
+    <service interface="it.arsinfo.opennms.plugins.otrs6.rest.WebhookHandler" ref="webhookHandlerImpl">
+        <service-properties>
+            <entry key="application-path" value="/rest"/>
+        </service-properties>
+    </service>
+
 </blueprint>
