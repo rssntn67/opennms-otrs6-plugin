@@ -37,4 +37,11 @@
         <argument ref="connectionManager"/>
     </bean>
 
+    <bean id="pluginScheduler" class="it.arsinfo.opennms.plugins.otrs6.ticketing.PluginScheduler"
+          init-method="start" destroy-method="stop">
+        <argument ref="alarmTicketUpdater"/>
+        <argument ref="otrsTicketDao"/>
+    </bean>
+    <service interface="org.opennms.integration.api.v1.health.HealthCheck" ref="pluginScheduler"/>
+
 </blueprint>
