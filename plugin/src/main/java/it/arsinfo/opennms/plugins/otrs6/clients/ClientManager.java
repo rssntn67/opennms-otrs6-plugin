@@ -15,7 +15,7 @@ public class ClientManager {
 
     private ClientCredentials credentials;
     private OtrsClient client;
-    public OtrsClient getOtrsClient(ClientCredentials credentials) {
+    public synchronized OtrsClient getOtrsClient(ClientCredentials credentials) {
         if (credentials.equals(this.credentials)) {
             return client;
         }
