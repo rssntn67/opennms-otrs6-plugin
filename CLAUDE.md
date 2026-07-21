@@ -190,6 +190,22 @@ compile-time-only Oracle spec jars declare narrower package versions than
 what's actually exported at runtime (`jakarta.jws-api` 2.1.0, servicemix
 `jaxws-api` 2.3), so bnd's inferred ranges don't resolve without widening.
 
+`features.xml` deliberately does **not** declare its own
+`org.apache.servicemix.specs.jaxws-api` bundle for `javax.xml.ws`/
+`javax.xml.ws.spi`, even though it does declare the equivalent spec bundles
+for JAXB/StAX/SAAJ. Karaf itself already ships a
+`org.apache.karaf.specs.java.xml.ws` system-bundle fragment providing that
+package (replacing the `javax.xml.ws` module removed from the JDK in 11+).
+Declaring a second exporter of the same package created a split package:
+`cxf-rt-frontend-jaxws` and this plugin's own bundle could each wire to a
+different one of the two exporters, so `Provider.provider()` and
+`org.apache.cxf.jaxws.spi.ProviderImpl` ended up being two different `Class`
+objects for the same interface — surfacing in production as
+`java.util.ServiceConfigurationError: javax.xml.ws.spi.Provider:
+org.apache.cxf.jaxws.spi.ProviderImpl not a subtype` on the first
+`saveOrUpdate`/ticket-create call. Fixed by removing the redundant bundle
+declaration so every consumer resolves to Karaf's single built-in exporter.
+
 ### JAX-RS Runtime Wiring
 
 `javax.ws.rs-api` (2.1.1, property `jaxrs.version`) is `provided` scope in
